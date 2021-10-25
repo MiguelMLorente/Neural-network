@@ -83,6 +83,7 @@ def trainNeuralNetwork(network, X, Y, l2_cost, lr = 0.5, train = True):
             _w = network[l].w
 
             # Gradient descent
+            print( np.mean(deltas[0], axis = 0, keepdims = True) * lr)
             network[l].b = network[l].b - np.mean(deltas[0], axis = 0, keepdims = True) * lr
             network[l].w = network[l].w - out[l][1].T @ deltas[0] * lr
             
@@ -109,7 +110,7 @@ for i in range (5000):
 
         for i0, x0 in enumerate(_x0):
             for i1, x1 in enumerate(_x1):
-                _Y[i0,i1] = trainNeuralNetwork(neuralNetwork, np.array([[x0, x1]]), circle, l2_cost, 0.5, False)[0][0]
+                _Y[i0,i1] = trainNeuralNetwork(neuralNetwork, np.array([[x0, x1]]), circle, l2_cost, 0.5, False)
                 
         plt.pcolormesh(_x0, _x1, _Y, cmap="coolwarm")
         plt.axis("equal")
