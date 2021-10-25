@@ -1,60 +1,37 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import time
-from IPython.display import clear_output
-
-from NeuralNetworks.NeuralNetwork import *
+from NeuralNetworks.NeuralNetwork import NeuralNetwork
 from NeuralNetworks.Utils.CostFunction import CostFunction
 from NeuralNetworks.Utils.ActivationFunction import ActivationFunction
 from DataSets.GenerateCircles import makeSingleCircleDataSet
 
-#CREAR EL DATASET
+# Create a single set of points within two circles with some random noise.
+# Points within the outer circle will be marked with a '0' in the variable
+# circle, while those in the inner circle will be marked with a '1'. The 
+# variable points will contain their 'x' and 'y' coordinate.
 
 n = 500
-p = 2
-
 points, circle = makeSingleCircleDataSet(n)
 
-# FUNCIONES DE ACTIVACION
-        
-sigm = ActivationFunction.sigmoid.value
+# Number of neurons at the first layer equals the dimension of the inputData,
+# while the number of neurons at the last layer must match the dimension of
+# the output data
 
-# COST FUNCTION
+nInputVariables = len(points[0])
+nOutputVariables = len(circle[0])
 
-l2_cost = CostFunction.leastSquares.value
+# The topology represents the number of neurons at each layer
+topology = [nInputVariables, 4, 8, 4, nOutputVariables]
 
-# LAUNCH TRAINING ALGORITHM
+# Create the network
+network = NeuralNetwork(topology, ActivationFunction.sigmoid.value)
 
-topology = [p, 4, 8, 4, 1]
-neuralNetwork = createNeuralNetwork(topology, sigm)
+# Train the network with the same data for a certain number of iterations and LR
+nIterations = 100000
+learningRate = 0.005
 
-loss = []
-step = 25
+# Optional parameters for the training process visualization
+plotLoss = True
+plotMesh = True
 
-for i in range (5000):
-    pY = trainNeuralNetwork(neuralNetwork, points, circle, l2_cost, 0.025)
-    if (i % step == 0) :
-        loss.append(l2_cost[0](pY, circle))
-        
-        res = 50
-        
-        _x0 = np.linspace(-1.5, 1.5, res)
-        _x1 = np.linspace(-1.5, 1.5, res)
-        _Y = np.zeros((res,res))
+network.train(nIterations, points, circle, CostFunction.leastSquares.value, plotLoss, plotMesh, learningRate, 2000)
 
-        for i0, x0 in enumerate(_x0):
-            for i1, x1 in enumerate(_x1):
-                _Y[i0,i1] = trainNeuralNetwork(neuralNetwork, np.array([[x0, x1]]), circle, l2_cost, 0.5, False)
-                
-        plt.pcolormesh(_x0, _x1, _Y, cmap="coolwarm")
-        plt.axis("equal")
-        plt.scatter(points[circle[:,0] == 0, 0], points[circle[:,0] == 0, 1], c = "blue")
-        plt.scatter(points[circle[:,0] == 1, 0], points[circle[:,0] == 1, 1], c = "red")
-        
-        clear_output(wait = True)
-        plt.show()
-        
-        plt.plot(range(len(loss)), loss)
-        plt.show()
-        
-        time.sleep(0.5)
+network.show(points, circle)

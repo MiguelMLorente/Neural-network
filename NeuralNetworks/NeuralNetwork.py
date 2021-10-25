@@ -1,54 +1,85 @@
 import numpy as np
-
-
-
-# CLASE DE LA CAPA DE LA RED
-
-class neuralLayer():
-    def __init__(self, connections, neurons, actFunction):
-        self.actFunction = actFunction
-        self.b = np.random.rand(1, neurons) * 2 - 1
-        self.w = np.random.rand(connections, neurons) * 2 - 1
-
+from NeuralNetworks.Utils.NeuralLayer import neuralLayer
+from IPython.display import clear_output
+import matplotlib.pyplot as plt
+import time
 
 # NEURAL NETWORK CREATION
 
-def createNeuralNetwork(topology, actFunction):
-    nn = []
-    for l, layer in enumerate(topology[:-1]):
-        nn.append(neuralLayer(topology[l], topology[l+1], actFunction))
-    return nn
+class NeuralNetwork:
+    def __init__(self, topology, actFunction):
+        self.network = []
+        for layer in range(0, len(topology) - 1):
+            self.network.append(neuralLayer(topology[layer], topology[layer + 1], actFunction))
 
-
-# TRAINING NEURAL NETWORK FUNCTION
-
-def trainNeuralNetwork(network, X, Y, l2_cost, lr = 0.5, train = True):
-    out = [(None, X)]
-    # Forward pass
-    for l, layer in enumerate(network):
+    def forwardPass(self, inputData, train = False):
+        out = [(None, inputData)]
+        for layer in range(0, len(self.network)):
+            
+            z = out[-1][1] @ self.network[layer].w + self.network[layer].b
+            a = self.network[layer].actFunction[0](z)
+            
+            out.append((z, a))
         
-        z = out[-1][1] @ network[l].w + network[l].b
-        a = network[l].actFunction[0](z)
+        if train:
+            return out
+        else:
+            return out[-1][1]
+
+
+    def _trainNeuralNetwork(self, inputData, expectedOutput, costFunction, learnRate):
+        out = self.forwardPass(inputData, True)
         
-        out.append((z, a))
-    
-    if train:
         # Backwards pass
         deltas = []
         
-        for l in reversed(range(0, len(network))):
+        for l in reversed(range(0, len(self.network))):
             z = out[l+1][0]
             a = out[l+1][1]
 
-            if (l == len(network) - 1):
-                deltas.insert(0, l2_cost[1](a, Y) * network[l].actFunction[1](a))
+            if (l == len(self.network) - 1):
+                deltas.insert(0, costFunction[1](a, expectedOutput) * self.network[l].actFunction[1](a))
             else:
-                deltas.insert(0, deltas[0] @ _w.T * network[l].actFunction[1](a))
-            _w = network[l].w
+                deltas.insert(0, deltas[0] @ _w.T * self.network[l].actFunction[1](a))
+            _w = self.network[l].w
 
             # Gradient descent
-            print( np.mean(deltas[0], axis = 0, keepdims = True) * lr)
-            network[l].b = network[l].b - np.mean(deltas[0], axis = 0, keepdims = True) * lr
-            network[l].w = network[l].w - out[l][1].T @ deltas[0] * lr
-            
-    return out[-1][1]
+            self.network[l].b -= np.mean(deltas[0], axis = 0, keepdims = True) * learnRate
+            self.network[l].w -= out[l][1].T @ deltas[0] * learnRate
+                
+        return out[-1][1]
+
+    def train(self, nIterations, inputData, expectedOutput, costFunction, plotCostFunction = False, plotMesh = False, learningRate= 0.025, step = 25):
+        loss = []
+
+        for i in range (nIterations):
+            pY = self._trainNeuralNetwork(inputData, expectedOutput, costFunction, learningRate)
+            if (plotCostFunction and i % step == 0) :
+                loss.append(costFunction[0](pY, expectedOutput))
+                plt.plot(range(len(loss)), loss)
+                plt.show()
+                time.sleep(0.5)
+                
+            if (plotMesh and i % step == 0):
+                self.show(inputData, expectedOutput)
+                
+    def show(self, inputData, expectedOutput):
+        resolution = 50
+                
+        _x0 = np.linspace(-1.5, 1.5, resolution)
+        _x1 = np.linspace(-1.5, 1.5, resolution)
+        _Y = np.zeros((resolution, resolution))
+
+        for i0, x0 in enumerate(_x0):
+            for i1, x1 in enumerate(_x1):
+                _Y[i0,i1] = self.forwardPass(np.array([[x0, x1]]))
+                
+        plt.pcolormesh(_x0, _x1, _Y, cmap="coolwarm")
+        plt.axis("equal")
+        plt.scatter(inputData[expectedOutput[:,0] == 0, 0], inputData[expectedOutput[:,0] == 0, 1], c = "blue")
+        plt.scatter(inputData[expectedOutput[:,0] == 1, 0], inputData[expectedOutput[:,0] == 1, 1], c = "red")
+        
+        clear_output(wait = True)
+        plt.show()
+        
+        
