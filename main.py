@@ -24,14 +24,18 @@ topology = [nInputVariables, 4, 8, 4, nOutputVariables]
 # Create the network
 network = NeuralNetwork(topology, ActivationFunction.sigmoid.value)
 
-# Train the network with the same data for a certain number of iterations and LR
-nIterations = 100000
-learningRate = 0.005
+# Train the network with the same data for a certain maximum number of
+# iterations and a given learning rate
 
-# Optional parameters for the training process visualization
-plotLoss = True
-plotMesh = True
 
-network.train(nIterations, points, circle, CostFunction.leastSquares.value, plotLoss, plotMesh, learningRate, 2000)
+network.train(nIterations = 10000, 
+              inputData = points, 
+              expectedOutput = circle, 
+              costFunction = CostFunction.leastSquares.value, 
+              learningRate = 0.025, 
+              breakTolerance = 1e-4,
+              plotLoss = True, 
+              plotMesh = True, 
+              plotStep = 500)
 
 network.show(points, circle)

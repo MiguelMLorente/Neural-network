@@ -49,19 +49,21 @@ class NeuralNetwork:
                 
         return out[-1][1]
 
-    def train(self, nIterations, inputData, expectedOutput, costFunction, plotCostFunction = False, plotMesh = False, learningRate= 0.025, step = 25):
+    def train(self, nIterations, inputData, expectedOutput, costFunction, learningRate= 0.025, breakTolerance = 1e-4, plotCostFunction = False, plotLoss = False, plotMesh = False, plotStep = 25):
         loss = []
-
         for i in range (nIterations):
             pY = self._trainNeuralNetwork(inputData, expectedOutput, costFunction, learningRate)
-            if (plotCostFunction and i % step == 0) :
+            if (plotLoss and i % plotStep == 0):
                 loss.append(costFunction[0](pY, expectedOutput))
-                plt.plot(range(len(loss)), loss)
+                plt.semilogy(range(len(loss)), loss)
                 plt.show()
                 time.sleep(0.5)
                 
-            if (plotMesh and i % step == 0):
+            if (plotMesh and i % plotStep == 0):
                 self.show(inputData, expectedOutput)
+                
+            if (loss[-1] <= breakTolerance and i % plotStep == 0):
+                break
                 
     def show(self, inputData, expectedOutput):
         resolution = 50
