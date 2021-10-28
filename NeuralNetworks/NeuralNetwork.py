@@ -7,10 +7,13 @@ import time
 # NEURAL NETWORK CREATION
 
 class NeuralNetwork:
-    def __init__(self, topology, actFunction):
+    def __init__(self, topology = None, actFunction = None):
         self.network = []
+        if (topology == None):
+            return
         for layer in range(0, len(topology) - 1):
             self.network.append(neuralLayer(topology[layer], topology[layer + 1], actFunction))
+
 
     def forwardPass(self, inputData, train = False):
         out = [(None, inputData)]
@@ -83,5 +86,20 @@ class NeuralNetwork:
         
         clear_output(wait = True)
         plt.show()
-        
-        
+
+    def __add__(self, other):
+        output = NeuralNetwork()
+        for layer in range(0, len(self.network)):
+            output.network.append(self.network[layer] + other.network[layer])
+        return output
+
+    def __mul__(self, value):
+        output = NeuralNetwork()
+        if (type(value) is int):
+            for layer in range(0, len(self.network)):
+                output.network.append(self.network[layer] * value)
+        else:
+            for layer in range(0, len(self.network)):
+                output.network.append(self.network[layer] * (value[0][layer], value[1][layer]))  
+
+        return output
