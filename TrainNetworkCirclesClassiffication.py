@@ -2,6 +2,7 @@ from NeuralNetworks.NeuralNetwork import NeuralNetwork
 from NeuralNetworks.Utils.CostFunction import CostFunction
 from NeuralNetworks.Utils.ActivationFunction import ActivationFunction
 from DataSets.GenerateCircles import makeSingleCircleDataSet
+from NSGAII.NeuralNetworkMutation import crossNeuralNetworks
 
 # Create a single set of points within two circles with some random noise.
 # Points within the outer circle will be marked with a '0' in the variable
@@ -32,7 +33,7 @@ network.train(nIterations = 10000,
               inputData = points, 
               expectedOutput = circle, 
               costFunction = CostFunction.leastSquares.value, 
-              learningRate = 0.025, 
+              learningRate = 0.015, 
               breakTolerance = 1e-4,
               plotLoss = True, 
               plotMesh = True, 
