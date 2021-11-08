@@ -94,6 +94,7 @@ class NeuralNetwork:
         return output
 
     def __mul__(self, value):
+        # try:
         output = NeuralNetwork()
         if (type(value) is int):
             for layer in range(0, len(self.network)):
@@ -103,3 +104,6 @@ class NeuralNetwork:
                 output.network.append(self.network[layer] * (value[0][layer], value[1][layer]))  
 
         return output
+        # except:
+        #     print(value)
+        #     print(type(value))

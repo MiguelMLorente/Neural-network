@@ -21,11 +21,14 @@ class neuralLayer():
         return output
 
     def __mul__(self, value):
-        output = neuralLayer(actFunction = self.actFunction, isEmpty = True)
-        if (type(value) is int):
-            output.b = self.b * value
-            output.w = self.w * value
-        else:
-            output.b = self.b * value[0]
-            output.w = self.w * value[1]
-        return output
+        try:
+            output = neuralLayer(actFunction = self.actFunction, isEmpty = True)
+            if (type(value) is int):
+                output.b = self.b * value
+                output.w = self.w * value
+            else:
+                output.b = self.b * value[0]
+                output.w = self.w * value[1]
+            return output
+        except:
+            print(value)

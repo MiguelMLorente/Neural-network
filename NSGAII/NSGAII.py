@@ -157,9 +157,11 @@ class NSGAII:
             
         return selectedCandidates, len(selectedCandidates)
                
-    def newGeneration(self, mu_crossover = 20, mu_mutation = 20, crossover_probability = 0.9):
-        
-        parents, nParents = self.individualSelection()
+    def newGeneration(self, mu_crossover = 20, mu_mutation = 20, crossover_probability = 0.9, isSingleObjective = False):
+        if (not isSingleObjective):
+            parents, nParents = self.individualSelection()
+        else:
+            parents, nParents = self.individualSelectionSingleObjective()
         
         children = []
         
@@ -195,7 +197,7 @@ class NSGAII:
                 
         self.currentGeneration = children    
                 
-    def runOptimizer(self):
+    def runMultiObjectiveOptimizer(self):
   
         for i in range(0, self.nGenerations):
 
@@ -211,6 +213,58 @@ class NSGAII:
             
             self.generationId += 1
 
-    
+    def individualSelectionSingleObjective(self, proportion = 0.5):
+        pool = np.round(proportion * self.populationSize)
+        poolCandidates = list(range(0, self.populationSize))
+        remainingCandidates = len(poolCandidates)
         
+        selectedCandidates = []
+        
+        # Until the pool of selected candidates is filled, one pair will be extracted,
+        # from which the best will be selected. The other candidate will return and 
+        # can be selected again for a new comparison.
+        
+        while (pool > 0):
+            
+            candidate1 = np.random.randint(0,remainingCandidates)
+            candidate2 = np.random.randint(0,remainingCandidates-1)
+            if (candidate2>=candidate1):
+                candidate2 += 1
+                
+            if (self.currentObjectives[candidate1] >= self.currentObjectives[candidate2]):
+                selectedCandidates.append(poolCandidates[candidate1])
+                poolCandidates.pop(candidate1)
+            else:
+                selectedCandidates.append(poolCandidates[candidate2])
+                poolCandidates.pop(candidate2)
+                
+            pool -= 1
+            remainingCandidates -= 1
+            
+        return selectedCandidates, len(selectedCandidates)
+
+    def runSingleObjectiveOptimizer(self):
+
+        # There is no need to make non-domination sort if there is only one objective
+        for i in range(0, self.nGenerations):
+            self.newGeneration(20*math.log(i+2), 20*math.log(i+2), isSingleObjective = True)
+            
+            self.currentObjectives = self.evaluateObjectives(self.currentGeneration)
+            
+            self.generationsRecord.append(self.currentGeneration)
+            self.objectivesRecord.append(self.currentObjectives)
+            print([str(i+1) + " of " + str(self.nGenerations)])
+            
+            self.generationId += 1
+        
+        best = 0
+        idBest = (0, 0)
+        for i in range(0, len(self.objectivesRecord)):
+            maximumId = np.argmax(self.objectivesRecord[i])
+            maximum = self.objectivesRecord[i][maximumId]
+            print(maximum)
+            if (maximum > best):
+                best = maximum
+                idBest = (i, maximumId)
+        return self.generationsRecord[idBest[0]][idBest[1]], best, idBest
     

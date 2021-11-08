@@ -68,7 +68,7 @@ def mutateNeuralNetwork(mu_m, topology, parent):
 
     for layer in range(0, len(topology) - 1):
         deltaPlus1[0].append(np.array(getDeltaList(mu_m, topology[layer + 1])) + 1)
-        deltaPlus1[0].append(np.array(getDeltaMatrix(mu_m, topology[layer], topology[layer + 1])) + 1)
+        deltaPlus1[1].append(np.array(getDeltaMatrix(mu_m, topology[layer], topology[layer + 1])) + 1)
 
     child = parent * deltaPlus1
     
